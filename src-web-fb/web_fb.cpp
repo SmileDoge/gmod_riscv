@@ -26,6 +26,7 @@ typedef struct web_fb_t
 
     int width;
 	int height;
+	size_t size;
 
     uint8_t* buffer;
 	uint8_t* send_buffer;
@@ -141,7 +142,7 @@ static void web_fb_remove(rvvm_mmio_dev_t* dev)
     if (fb)
     {
 		for (auto conn : fb->connections)
-			mg_close_conn(conn);
+			conn->is_closing = 1;
 		fb->server->is_closing = 1;
 		fb->timer->flags = MG_TIMER_AUTODELETE;
 		mg_mgr_poll(&web_fb_mgr, 0);
@@ -173,10 +174,10 @@ static void web_fb_timer(void* data)
 	if (!fb->tj_compressor)
 		return;
 
-	memcpy(fb->send_buffer, fb->buffer, fb->width * fb->height * 4);
+	memcpy(fb->send_buffer, fb->buffer, fb->size);
 
 	if (tjCompress2(fb->tj_compressor, fb->send_buffer, fb->width, 0, fb->height,
-		TJPF_ARGB, &fb->jpeg_buf, &fb->jpeg_size, TJSAMP_420, 75, TJFLAG_FASTDCT))
+		TJPF_BGR, &fb->jpeg_buf, &fb->jpeg_size, TJSAMP_420, 75, TJFLAG_FASTDCT))
 	{
 		printf("Error compressing image on fb %p: %s\n", (uint32_t)fb->mmio->addr, tjGetErrorStr());
 		return;
@@ -224,7 +225,7 @@ static void web_fb_event_handler(struct mg_connection* conn, int ev, void* ev_da
 
 web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int height)
 {
-    int size = width * height * 4;
+    int size = width * height * 3;
 
     web_fb_t* fb = new web_fb_t();
 
@@ -232,6 +233,7 @@ web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int heigh
 	fb->send_buffer = new uint8_t[size];
 	fb->width = width;
 	fb->height = height;
+	fb->size = size;
 
 	memset(fb->buffer, 0, size);
 	memset(fb->send_buffer, 0, size);
@@ -273,10 +275,10 @@ web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int heigh
     struct fdt_node* fb_fdt = fdt_node_create_reg("framebuffer", fb_mmio.addr);
     fdt_node_add_prop_reg(fb_fdt, "reg", fb_mmio.addr, fb_mmio.size);
     fdt_node_add_prop_str(fb_fdt, "compatible", "simple-framebuffer");
-    fdt_node_add_prop_str(fb_fdt, "format", "a8r8g8b8");
+    fdt_node_add_prop_str(fb_fdt, "format", "r8g8b8");
     fdt_node_add_prop_u32(fb_fdt, "width", fb->width);
     fdt_node_add_prop_u32(fb_fdt, "height", fb->height);
-    fdt_node_add_prop_u32(fb_fdt, "stride", width * 4);
+    fdt_node_add_prop_u32(fb_fdt, "stride", width * 3);
 
     fdt_node_add_child(rvvm_get_fdt_soc(machine), fb_fdt);
 
