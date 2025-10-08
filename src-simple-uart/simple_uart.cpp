@@ -6,6 +6,13 @@
 
 #include <stdio.h>
 
+extern "C"
+{
+#include <devices/ns16550a.h>
+
+#include <fdtlib.h>
+}
+
 static int simple_uart_mt = 0;
 
 RV_EXPORT const char* device_get_name()
@@ -20,15 +27,16 @@ RV_EXPORT int device_get_version()
 
 LUA_FUNCTION(uart_write)
 {
-	simple_uart_t* uart = LUA->GetUserType<simple_uart_t>(1, simple_uart_mt);
+	//simple_uart_t* uart = LUA->GetUserType<simple_uart_t>(1, simple_uart_mt);
+	chardev_t* uart = LUA->GetUserType<chardev_t>(1, simple_uart_mt);
 
 	if (!uart) return 0;
 
-	size_t str_len = 0;
+	uint32_t str_len = 0;
 
 	const char* buf = LUA->GetString(2, &str_len);
 
-	simple_uart_write_buf(uart, buf, str_len);
+	chardev_simple_uart_push_rx(uart, buf, str_len);
 
 	return 0;
 }
@@ -37,13 +45,18 @@ char read_buffer[4096] = { 0 };
 
 LUA_FUNCTION(uart_read)
 {
-	simple_uart_t* uart = LUA->GetUserType<simple_uart_t>(1, simple_uart_mt);
+	//simple_uart_t* uart = LUA->GetUserType<simple_uart_t>(1, simple_uart_mt);
+	chardev_t* uart = LUA->GetUserType<chardev_t>(1, simple_uart_mt);
+
+	int out_size = LUA->GetNumber(2);
+
+	if (out_size <= 0 || out_size > 4096) out_size = 4096;
 
 	if (!uart) return 0;
 
-	memset(read_buffer, 0, sizeof(read_buffer));
+	memset(read_buffer, 0, out_size);
 
-	size_t size = simple_uart_read_buf(uart, read_buffer, sizeof(read_buffer));
+	size_t size = chardev_simple_uart_pop_tx(uart, read_buffer, out_size);
 
 	LUA->PushString(read_buffer, size);
 
@@ -52,7 +65,7 @@ LUA_FUNCTION(uart_read)
 
 LUA_FUNCTION(uart__tostring)
 {
-	simple_uart_t* uart = LUA->GetUserType<simple_uart_t>(1, simple_uart_mt);
+	chardev_t* uart = LUA->GetUserType<chardev_t>(1, simple_uart_mt);
 
 	if (!uart)
 	{
@@ -66,7 +79,7 @@ LUA_FUNCTION(uart__tostring)
 	{
 		char buffer[64];
 
-		snprintf(buffer, sizeof(buffer), "simple_uart: %p@", dev->addr, dev->size);
+		snprintf(buffer, sizeof(buffer), "simple_uart: %p@%p", dev->addr, dev->size);
 
 		LUA->PushString(buffer);
 
@@ -119,14 +132,32 @@ LUA_FUNCTION(uart_create)
 		return 1;
 	}
 
-	simple_uart_t* uart = simple_uart_init(gmod_machine_get_rvvm_machine(machine), address, 0x1000, add_chosen);
+	rvvm_intc_t* intc = rvvm_get_intc(gmod_machine_get_rvvm_machine(machine));
 
-	if (!uart) {
+	//simple_uart_t* uart = simple_uart_init(gmod_machine_get_rvvm_machine(machine), address, 0x1000, add_chosen);
+	chardev_t* simple_uart = chardev_simple_uart_create();
+
+
+	if (!simple_uart) {
 		LUA->PushBool(false);
 		return 1;
 	}
 
-	LUA->PushUserType(uart, simple_uart_mt);
+	rvvm_mmio_dev_t* ns16550a = ns16550a_init(
+		gmod_machine_get_rvvm_machine(machine),
+		simple_uart,
+		address, intc, rvvm_alloc_irq(intc)
+	);
+
+	simple_uart_set_mmio_dev(simple_uart, ns16550a);
+
+	if (add_chosen)
+	{
+		struct fdt_node* chosen = fdt_node_find(rvvm_get_fdt_root(gmod_machine_get_rvvm_machine(machine)), "chosen");
+		fdt_node_add_prop_str(chosen, "stdout-path", "/soc/uart@10000000");
+	}
+
+	LUA->PushUserType(simple_uart, simple_uart_mt);
 	if (LUA->PushMetaTable(simple_uart_mt)) LUA->SetMetaTable(-2);
 
 	return 1;

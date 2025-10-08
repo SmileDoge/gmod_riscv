@@ -5,7 +5,7 @@ workspace "gmod_riscv"
 
     location ("projects/" .. os.host() .. "/" .. _ACTION)
 
-    platforms { "x86" }
+    platforms { "x86", "x86_64" }
     
     defines { 
         "_CRT_SECURE_NO_WARNINGS", 
@@ -29,8 +29,6 @@ workspace "gmod_riscv"
     project "gmod_riscv"
         kind "SharedLib"
 
-        targetname "gmsv_riscv_win32"
-
         defines { "RVVMLIB_SHARED", "GMOD_RISCV_EXPORTS" }
 
         includedirs {
@@ -50,15 +48,23 @@ workspace "gmod_riscv"
             "src/**.c",
         }
 
-        targetdir "out/x86/%{cfg.buildcfg}"
-
-        libdirs {
-            "external/rvvm/lib",
-        }
-
         links {
             "rvvm",
         }
+
+        filter { "architecture:x86" }
+            targetname "gmsv_riscv_win32"
+            targetdir "out/x86/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib32",
+            }
+
+        filter { "architecture:x86_64" }
+            targetname "gmsv_riscv_win64"
+            targetdir "out/x86_64/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib64",
+            }
 
     project "simple_uart_dev"
         kind "SharedLib"
@@ -83,12 +89,6 @@ workspace "gmod_riscv"
             "src-simple-uart/**.cpp",
             "src-simple-uart/**.c",
         }
-
-        targetdir "out/x86/%{cfg.buildcfg}"
-
-        libdirs {
-            "external/rvvm/lib",
-        }
         
         links {
             "gmod_riscv",
@@ -99,7 +99,19 @@ workspace "gmod_riscv"
             "gmod_riscv",
         }
 
-    
+        
+        filter { "architecture:x86" }
+            targetdir "out/x86/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib32",
+            }
+
+        filter { "architecture:x86_64" }
+            targetdir "out/x86_64/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib64",
+            }
+
     project "web_fb_dev"
         kind "SharedLib"
 
@@ -124,13 +136,6 @@ workspace "gmod_riscv"
             "src-web-fb/**.cpp",
             "src-web-fb/**.c",
         }
-
-        targetdir "out/x86/%{cfg.buildcfg}"
-
-        libdirs {
-            "external/rvvm/lib",
-            "external/libjpeg-turbo/lib",
-        }
         
         links {
             "gmod_riscv",
@@ -142,3 +147,17 @@ workspace "gmod_riscv"
         dependson {
             "gmod_riscv",
         }
+        
+        filter { "architecture:x86" }
+            targetdir "out/x86/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib32",
+                "external/libjpeg-turbo/lib",
+            }
+
+        filter { "architecture:x86_64" }
+            targetdir "out/x86_64/%{cfg.buildcfg}"
+            libdirs {
+                "external/rvvm/lib64",
+                "external/libjpeg-turbo64/lib",
+            }

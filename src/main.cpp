@@ -262,6 +262,21 @@ LUA_FUNCTION(load_def_devices)
 	return 0;
 }
 
+LUA_FUNCTION(attach_nvme)
+{
+	int id = LUA->CheckNumber(1);
+	gmod_machine_t* machine = get_machine(id);
+
+	if (!machine) return 0;
+
+	const char* path = LUA->CheckString(2);
+	bool rw = LUA->IsType(3, GarrysMod::Lua::Type::Bool) ? LUA->GetBool(3) : false;
+
+	LUA->PushBool(gmod_machine_attach_nvme(machine, path, rw));
+
+	return 1;
+}
+
 std::thread event_thread;
 static bool thread_running = false;
 
@@ -335,6 +350,129 @@ LUA_FUNCTION(unload_device)
 	
 	LUA->PushBool(dev_manager_unload_device(name));
 
+	return 1;
+}
+
+LUA_FUNCTION(attach_keyboard)
+{
+	int id = LUA->CheckNumber(1);
+	gmod_machine_t* machine = get_machine(id);
+	if (!machine) {
+		LUA->PushBool(false);
+		return 1;
+	}
+	LUA->PushBool(gmod_machine_attach_keyboard(machine));
+	return 1;
+}
+
+LUA_FUNCTION(attach_mouse)
+{
+	int id = LUA->CheckNumber(1);
+	gmod_machine_t* machine = get_machine(id);
+	if (!machine) {
+		LUA->PushBool(false);
+		return 1;
+	}
+	LUA->PushBool(gmod_machine_attach_mouse(machine));
+	return 1;
+}
+
+LUA_FUNCTION(keyboard_press)
+{
+	int id = LUA->CheckNumber(1);
+	hid_key_t key = LUA->CheckNumber(2);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_keyboard_press(machine, key));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(keyboard_release)
+{
+	int id = LUA->CheckNumber(1);
+	hid_key_t key = LUA->CheckNumber(2);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_keyboard_release(machine, key));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_press)
+{
+	int id = LUA->CheckNumber(1);
+	hid_btns_t btns = LUA->CheckNumber(2);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_press(machine, btns));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_release)
+{
+	int id = LUA->CheckNumber(1);
+	hid_btns_t btns = LUA->CheckNumber(2);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_release(machine, btns));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_scroll)
+{
+	int id = LUA->CheckNumber(1);
+	int32_t offset = LUA->CheckNumber(2);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_scroll(machine, offset));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_move)
+{
+	int id = LUA->CheckNumber(1);
+	int32_t x = LUA->CheckNumber(2);
+	int32_t y = LUA->CheckNumber(3);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_move(machine, x, y));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_place)
+{
+	int id = LUA->CheckNumber(1);
+	int32_t x = LUA->CheckNumber(2);
+	int32_t y = LUA->CheckNumber(3);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_place(machine, x, y));
+	else
+		LUA->PushBool(false);
+	return 1;
+}
+
+LUA_FUNCTION(mouse_resolution)
+{
+	int id = LUA->CheckNumber(1);
+	uint32_t x = LUA->CheckNumber(2);
+	uint32_t y = LUA->CheckNumber(3);
+	gmod_machine_t* machine = get_machine(id);
+	if (machine)
+		LUA->PushBool(gmod_machine_mouse_resolution(machine, x, y));
+	else
+		LUA->PushBool(false);
 	return 1;
 }
 
@@ -412,6 +550,9 @@ GMOD_MODULE_OPEN()
 			LUA->PushCFunction(load_def_devices);
 			LUA->SetField(-2, "load_def_devices");
 
+			LUA->PushCFunction(attach_nvme);
+			LUA->SetField(-2, "attach_nvme");
+
 			// Devices table
 
 			LUA->CreateTable();
@@ -428,6 +569,38 @@ GMOD_MODULE_OPEN()
 				LUA->SetField(-2, "unload_device");
 			LUA->SetField(-2, "devices");
 
+			
+			LUA->PushCFunction(attach_keyboard);
+			LUA->SetField(-2, "attach_keyboard");
+
+			LUA->PushCFunction(attach_mouse);
+			LUA->SetField(-2, "attach_mouse");
+
+			LUA->CreateTable();
+				LUA->PushCFunction(keyboard_press);
+				LUA->SetField(-2, "keyboard_press");
+
+				LUA->PushCFunction(keyboard_release);
+				LUA->SetField(-2, "keyboard_release");
+
+				LUA->PushCFunction(mouse_press);
+				LUA->SetField(-2, "mouse_press");
+
+				LUA->PushCFunction(mouse_release);
+				LUA->SetField(-2, "mouse_release");
+
+				LUA->PushCFunction(mouse_scroll);
+				LUA->SetField(-2, "mouse_scroll");
+
+				LUA->PushCFunction(mouse_move);
+				LUA->SetField(-2, "mouse_move");
+
+				LUA->PushCFunction(mouse_place);
+				LUA->SetField(-2, "mouse_place");
+
+				LUA->PushCFunction(mouse_resolution);
+				LUA->SetField(-2, "mouse_resolution");
+			LUA->SetField(-2, "hid");
 
 			LUA->PushCFunction(init_thread);
 			LUA->SetField(-2, "init_thread");

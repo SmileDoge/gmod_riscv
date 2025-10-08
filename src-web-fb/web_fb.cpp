@@ -18,7 +18,7 @@ extern "C"
 #include <vector>
 #include <mutex>
 
-#define FB_FPS 30
+#define FB_FPS 60
 
 typedef struct web_fb_t
 {
@@ -44,6 +44,8 @@ web_fb_t* fb_to_clear = nullptr;
 std::atomic<bool> fb_cleared = true;
 std::mutex crit_mutex;
 
+std::atomic<int> quality;
+
 RV_EXPORT const char* device_get_name()
 {
 	return "web_fb";
@@ -60,6 +62,7 @@ LUA_FUNCTION(web_fb_create)
 	int addr = LUA->CheckNumber(2);
 	int width = LUA->CheckNumber(3);
 	int height = LUA->CheckNumber(4);
+	int port = LUA->CheckNumber(5);
 
 	gmod_machine_t* machine = get_machine(id);
 
@@ -68,7 +71,7 @@ LUA_FUNCTION(web_fb_create)
 		return 1;
 	}
 
-	web_fb_t* web_fb = web_fb_init(gmod_machine_get_rvvm_machine(machine), addr, width, height);
+	web_fb_t* web_fb = web_fb_init(gmod_machine_get_rvvm_machine(machine), addr, width, height, port);
 
 	if (!web_fb) {
 		LUA->PushBool(false);
@@ -78,6 +81,22 @@ LUA_FUNCTION(web_fb_create)
 	LUA->PushBool(true);
 
 	return 1;
+}
+
+LUA_FUNCTION(web_fb_get_quality)
+{
+	LUA->PushNumber(quality.load());
+
+	return 1;
+}
+
+LUA_FUNCTION(web_fb_set_quality)
+{
+	int new_quality = LUA->CheckNumber(1);
+	if (new_quality < 1) new_quality = 1;
+	if (new_quality > 100) new_quality = 100;
+	quality.store(new_quality);
+	return 0;
 }
 
 mg_mgr web_fb_mgr;
@@ -97,6 +116,8 @@ RV_EXPORT void device_init(GarrysMod::Lua::ILuaBase* LUA)
 	memset(&web_fb_mgr, 0, sizeof(web_fb_mgr));
 	mg_mgr_init(&web_fb_mgr);
 
+	quality.store(75);
+
 	web_fb_finished = false;
 
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
@@ -113,6 +134,10 @@ RV_EXPORT void device_register_functions(GarrysMod::Lua::ILuaBase* LUA)
 {
 	LUA->PushCFunction(web_fb_create);
 	LUA->SetField(-2, "web_fb_create");
+	LUA->PushCFunction(web_fb_get_quality);
+	LUA->SetField(-2, "web_fb_get_quality");
+	LUA->PushCFunction(web_fb_set_quality);
+	LUA->SetField(-2, "web_fb_set_quality");
 }
 
 RV_EXPORT void device_close(GarrysMod::Lua::ILuaBase* LUA)
@@ -141,23 +166,18 @@ static void web_fb_remove(rvvm_mmio_dev_t* dev)
     web_fb_t* fb = (web_fb_t*)dev->data;
     if (fb)
     {
-		for (auto conn : fb->connections)
-			conn->is_closing = 1;
-		fb->server->is_closing = 1;
-		fb->timer->flags = MG_TIMER_AUTODELETE;
-		mg_mgr_poll(&web_fb_mgr, 0);
-
-
-		//fb->server->is_closing = 1;
-
-		//mg_mgr_poll(&web_fb_mgr, 0);
-
 
 		tjDestroy(fb->tj_compressor);
 		if (fb->jpeg_buf) tjFree(fb->jpeg_buf);
 
 		fb->tj_compressor = nullptr;
 		fb->jpeg_buf = nullptr;
+
+		for (auto conn : fb->connections)
+			conn->is_closing = 1;
+		fb->server->is_closing = 1;
+		fb->timer->flags = MG_TIMER_AUTODELETE | MG_TIMER_CALLED;
+		mg_mgr_poll(&web_fb_mgr, 0);
 
 		delete[] fb->buffer;
 		delete[] fb->send_buffer;
@@ -174,10 +194,10 @@ static void web_fb_timer(void* data)
 	if (!fb->tj_compressor)
 		return;
 
-	memcpy(fb->send_buffer, fb->buffer, fb->size);
+	//memcpy(fb->send_buffer, fb->buffer, fb->size);
 
-	if (tjCompress2(fb->tj_compressor, fb->send_buffer, fb->width, 0, fb->height,
-		TJPF_BGR, &fb->jpeg_buf, &fb->jpeg_size, TJSAMP_420, 75, TJFLAG_FASTDCT))
+	if (tjCompress2(fb->tj_compressor, fb->buffer, fb->width, 0, fb->height,
+		TJPF_BGRA, &fb->jpeg_buf, &fb->jpeg_size, TJSAMP_420, quality.load(), TJFLAG_FASTDCT))
 	{
 		printf("Error compressing image on fb %p: %s\n", (uint32_t)fb->mmio->addr, tjGetErrorStr());
 		return;
@@ -223,9 +243,9 @@ static void web_fb_event_handler(struct mg_connection* conn, int ev, void* ev_da
 	}
 }
 
-web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int height)
+web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int height, uint16_t port)
 {
-    int size = width * height * 3;
+    int size = width * height * 4;
 
     web_fb_t* fb = new web_fb_t();
 
@@ -257,7 +277,11 @@ web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int heigh
 
 	fb->mmio = mmio;
 
-	fb->server = mg_http_listen(&web_fb_mgr, "http://0.0.0.0:8001", web_fb_event_handler, fb);
+	char url_buff[512];
+
+	snprintf(url_buff, 512, "http://0.0.0.0:%d", port);
+
+	fb->server = mg_http_listen(&web_fb_mgr, url_buff, web_fb_event_handler, fb);
 
 	if (!fb->server)
 	{
@@ -275,10 +299,10 @@ web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int heigh
     struct fdt_node* fb_fdt = fdt_node_create_reg("framebuffer", fb_mmio.addr);
     fdt_node_add_prop_reg(fb_fdt, "reg", fb_mmio.addr, fb_mmio.size);
     fdt_node_add_prop_str(fb_fdt, "compatible", "simple-framebuffer");
-    fdt_node_add_prop_str(fb_fdt, "format", "r8g8b8");
+    fdt_node_add_prop_str(fb_fdt, "format", "a8r8g8b8");
     fdt_node_add_prop_u32(fb_fdt, "width", fb->width);
     fdt_node_add_prop_u32(fb_fdt, "height", fb->height);
-    fdt_node_add_prop_u32(fb_fdt, "stride", width * 3);
+    fdt_node_add_prop_u32(fb_fdt, "stride", width * 4);
 
     fdt_node_add_child(rvvm_get_fdt_soc(machine), fb_fdt);
 

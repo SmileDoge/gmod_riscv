@@ -12,4 +12,4 @@ RV_EXPORT void device_close(GarrysMod::Lua::ILuaBase* LUA);
 
 typedef struct web_fb_t web_fb_t;
 
-web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int height);
+web_fb_t* web_fb_init(rvvm_machine_t* machine, size_t addr, int width, int height, uint16_t port);
