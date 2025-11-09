@@ -1,8 +1,12 @@
 #include "stdio.h"
-#include "Windows.h"
 #include "SubprocessEmulator.h"
-
 #include "simple_device.h"
+
+#ifdef _WIN32
+#include "Windows.h"
+#else
+
+#endif
 
 int main(int argc, char** argv)
 {
@@ -17,10 +21,6 @@ int main(int argc, char** argv)
 		emu.LogInfo("Failed to start emulator");
 		return -1;
 	}
-
-	//printf("press key!");
-	//getchar();
-
 
 	return emu.StartLoop();
 }
