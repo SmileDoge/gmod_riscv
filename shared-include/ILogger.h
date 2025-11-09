@@ -44,7 +44,7 @@ public:
 
 #else
 
-#define RV_DEBUG(fmt, ...) (void)
-#define RV_DEBUG_LINE(fmt, ...) (void)
+#define RV_DEBUG(fmt, ...) ((void)0)
+#define RV_DEBUG_LINE(fmt, ...) ((void)0)
 
 #endif

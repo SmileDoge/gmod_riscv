@@ -67,7 +67,7 @@ public:
 	void NotifyAllRegister(GarrysMod::Lua::ILuaBase* LUA);
 	void NotifyAllUnregister(GarrysMod::Lua::ILuaBase* LUA);
 
-	bool Start(GarrysMod::Lua::ILuaBase* LUA);
+	bool Start(GarrysMod::Lua::ILuaBase* LUA, const char* subprocess_path = nullptr);
 	void Stop();
 
 	void InitLogForConsole();
@@ -80,7 +80,7 @@ private:
 
 	bool InitStatus();
 	bool InitPair();
-	bool InitProcess();
+	bool InitProcess(const char* subprocess_path = nullptr);
 
 	void OnCloseProcess();
 	void CloseProcess();

@@ -4,10 +4,14 @@
 
 #include "GmodDeviceLua.h"
 
-#ifdef _DEBUG
+#ifdef _DEBUG // for tests
+#ifdef _WIN32
 #define CHILD_PROCESS_EXE "M:\\Projects\\C++\\gmod_riscv\\out\\x86_64\\Debug\\rvvm_subprocess.exe"
 #else
-#define CHILD_PROCESS_EXE "M:\\Projects\\C++\\gmod_riscv\\out\\x86_64\\Release\\rvvm_subprocess.exe"
+#define CHILD_PROCESS_EXE "/home/smile/rvvm_gmod/gmod_riscv/out/x86_64/Debug/rvvm_subprocess"
+#endif
+#else
+
 #endif
 
 ILogger* g_Logger = nullptr;
@@ -26,7 +30,7 @@ GmodEmulator::~GmodEmulator() noexcept
 	Stop();
 }
 
-bool GmodEmulator::Start(GarrysMod::Lua::ILuaBase* LUA)
+bool GmodEmulator::Start(GarrysMod::Lua::ILuaBase* LUA, const char* subprocess_path)
 {
 	L = LUA;
 
@@ -47,7 +51,7 @@ bool GmodEmulator::Start(GarrysMod::Lua::ILuaBase* LUA)
 		return false;
 	}
 
-	if (!InitProcess())
+	if (!InitProcess(subprocess_path))
 	{
 		RV_ERROR("InitProcess error");
 		return false;
@@ -591,15 +595,26 @@ bool GmodEmulator::InitPair()
 	return true;
 }
 
-bool GmodEmulator::InitProcess()
+bool GmodEmulator::InitProcess(const char* subprocess_path)
 {
 	if (subprocess.valid()) return false;
 
 	char pid[16];
 
 	sprintf(pid, "%d", GetCurrentProcessId());
-
+	
+#ifdef CHILD_PROCESS_EXE
 	subprocess = Process::Create(CHILD_PROCESS_EXE, {pid});
+#else
+	if (!subprocess_path)
+#ifdef _WIN32
+		subprocess_path = "./rvvm_subprocess.exe";
+#else
+		subprocess_path = "./rvvm_subprocess";
+#endif
+
+	subprocess = Process::Create(subprocess_path, { pid });
+#endif
 
 	return true;
 }

@@ -27,6 +27,9 @@ public:
 
 	//static int CreateDevice(GarrysMod::Lua::ILuaBase* LUA);
 
+	LUA_METHOD_DECLARE(Start)
+	LUA_METHOD_DECLARE(Stop)
+
 	LUA_METHOD_DECLARE(GetState)
 	LUA_METHOD_DECLARE(GetVersion)
 

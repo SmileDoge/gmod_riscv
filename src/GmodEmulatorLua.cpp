@@ -11,6 +11,12 @@ void GmodEmulatorLua::Initialize(GarrysMod::Lua::ILuaBase* LUA, GmodEmulator* em
 
 	LUA->PushSpecial(GarrysMod::Lua::SPECIAL_GLOB);
         LUA->CreateTable();
+			LUA->PushCFunction(Start);
+			LUA->SetField(-2, "Start");
+
+			LUA->PushCFunction(Stop);
+			LUA->SetField(-2, "Stop");
+
 			LUA->PushCFunction(GetState);
 			LUA->SetField(-2, "GetState");
 
@@ -38,6 +44,30 @@ void GmodEmulatorLua::Initialize(GarrysMod::Lua::ILuaBase* LUA, GmodEmulator* em
 GmodEmulator* GmodEmulatorLua::GetEmulator()
 {
     return _emu;
+}
+
+LUA_METHOD_DEFINE(Start)
+{
+	EmulatorState state = GetEmulator()->GetState();
+
+	if (state == EmulatorState::NOT_STARTED || state == EmulatorState::CHILD_PROCESS_EXITED)
+		LUA->PushBool(GetEmulator()->Start(LUA, LUA->GetString(1)));
+	else
+		LUA->ThrowError("GmodEmulator already started!");
+
+	return 1;
+}
+
+LUA_METHOD_DEFINE(Stop)
+{
+	EmulatorState state = GetEmulator()->GetState();
+
+	if (state != EmulatorState::NOT_STARTED)
+		GetEmulator()->Stop();
+	else
+		LUA->ThrowError("GmodEmulator already stopped!");
+
+	return 0;
 }
 
 LUA_METHOD_DEFINE(GetState)
