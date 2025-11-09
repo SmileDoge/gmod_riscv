@@ -19,6 +19,10 @@
 #include <stdarg.h>
 #endif
 
+#ifdef DEBUG_DISABLE_HARDLINK
+#undef CHILD_PROCESS_EXE
+#endif
+
 ILogger* g_Logger = nullptr;
 
 GmodEmulator::GmodEmulator()

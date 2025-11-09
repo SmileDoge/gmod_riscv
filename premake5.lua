@@ -1,3 +1,8 @@
+newoption {
+    trigger = "debug-disable-hardlink",
+    description = "Disable hardlink in debug"
+}
+
 workspace "gmod_riscv"
     configurations { "Debug", "Release" }
     language "C++"
@@ -11,6 +16,10 @@ workspace "gmod_riscv"
         "_CRT_SECURE_NO_WARNINGS", 
         "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS",
     }
+
+    if _OPTIONS["debug-disable-hardlink"] then
+        defines { "DEBUG_DISABLE_HARDLINK" }
+    end
 
     startproject "gmod_riscv_test"
 
