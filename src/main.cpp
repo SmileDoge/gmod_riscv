@@ -1,6 +1,8 @@
 #include <GarrysMod/Lua/Interface.h>
 
+#ifdef _WIN32
 #include "windows.h"
+#endif
 
 #include <thread>
 #include <map>
@@ -15,13 +17,8 @@ extern "C"
 #include <devices/rtc-goldfish.h>
 }
 
-#include "mmio_atomic.h"
-
 #include <vector>
 #include <string>
-#include "gmod_machine.h"
-
-#include "dev_manager.h"
 
 #include "GmodEmulator.h"
 
