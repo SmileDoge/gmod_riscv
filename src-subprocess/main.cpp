@@ -4,8 +4,6 @@
 
 #ifdef _WIN32
 #include "Windows.h"
-#else
-
 #endif
 
 int main(int argc, char** argv)
@@ -25,6 +23,7 @@ int main(int argc, char** argv)
 	return emu.StartLoop();
 }
 
+#ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	AllocConsole();
@@ -35,3 +34,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	return main(__argc, __argv);
 }
+#endif
