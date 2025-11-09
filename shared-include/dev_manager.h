@@ -21,7 +21,7 @@ GMOD_API bool dev_manager_register_device(
 	DeviceGetNameFunc get_name_func, 
 	DeviceGetVersionFunc get_version_func, 
 	DeviceInitFunc init_func, 
-	DeviceRegisterFunc reg_func, 
+	DeviceRegisterFunc_ reg_func, 
 	DeviceCloseFunc close_func);
 
 GMOD_API bool dev_manager_load_device(

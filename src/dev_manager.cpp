@@ -18,7 +18,7 @@ typedef struct device_info_int_t
 	const char* name;
 	int version;
 	DeviceInitFunc init_func;
-	DeviceRegisterFunc register_func;
+	DeviceRegisterFunc_ register_func;
 	DeviceCloseFunc close_func;
 } device_info_int_t;
 
@@ -57,7 +57,7 @@ const char* dev_manager_load_device__int(fs::path path)
 	DeviceGetVersionFunc get_version = (DeviceGetVersionFunc)GetProcAddress(module, "device_get_version");
 
 	DeviceInitFunc init_func = (DeviceInitFunc)GetProcAddress(module, "device_init");
-	DeviceRegisterFunc register_func = (DeviceRegisterFunc)GetProcAddress(module, "device_register_functions");
+	DeviceRegisterFunc_ register_func = (DeviceRegisterFunc_)GetProcAddress(module, "device_register_functions");
 	DeviceCloseFunc close_func = (DeviceCloseFunc)GetProcAddress(module, "device_close");
 
 	if (!init_func || !register_func || !close_func || !get_name || !get_version)
@@ -178,7 +178,7 @@ GMOD_API device_info_int_t* dev_manager_get_device__int(const std::string& name)
 	return nullptr;
 }
 
-GMOD_API bool dev_manager_register_device(DeviceGetNameFunc get_name_func, DeviceGetVersionFunc get_version_func, DeviceInitFunc init_func, DeviceRegisterFunc reg_func, DeviceCloseFunc close_func)
+GMOD_API bool dev_manager_register_device(DeviceGetNameFunc get_name_func, DeviceGetVersionFunc get_version_func, DeviceInitFunc init_func, DeviceRegisterFunc_ reg_func, DeviceCloseFunc close_func)
 {
 	if (!init_func || !reg_func || !close_func || !get_name_func || !get_version_func)
 		return false;

@@ -13,7 +13,7 @@ typedef const char* (*DeviceGetNameFunc)(void);
 typedef int (*DeviceGetVersionFunc)(void);
 
 typedef void (*DeviceInitFunc)(GarrysMod::Lua::ILuaBase*);
-typedef void (*DeviceRegisterFunc)(GarrysMod::Lua::ILuaBase*);
+typedef void (*DeviceRegisterFunc_)(GarrysMod::Lua::ILuaBase*);
 typedef void (*DeviceCloseFunc)(GarrysMod::Lua::ILuaBase*);
 
 typedef struct device_info_t
