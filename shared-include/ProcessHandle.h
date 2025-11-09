@@ -47,6 +47,15 @@ public:
         return Open(pid);
     }
 
+    static uint32_t GetPID()
+    {
+#ifdef _WIN32
+        return GetCurrentProcessId();
+#else
+        return getpid();
+#endif
+    }
+
     // Spawn a new process.
     // On Windows: executable can be full path or executable name; args appended to command line.
     // On POSIX: executable is passed to execvp (searches PATH). args[0] should be arg0 or omitted.

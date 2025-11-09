@@ -10,8 +10,13 @@
 #else
 #define CHILD_PROCESS_EXE "/home/smile/rvvm_gmod/gmod_riscv/out/x86_64/Debug/rvvm_subprocess"
 #endif
-#else
+#endif
 
+#ifndef _WIN32
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 #endif
 
 ILogger* g_Logger = nullptr;
@@ -601,8 +606,8 @@ bool GmodEmulator::InitProcess(const char* subprocess_path)
 
 	char pid[16];
 
-	sprintf(pid, "%d", GetCurrentProcessId());
-	
+	sprintf(pid, "%d", Process::GetPID());
+
 #ifdef CHILD_PROCESS_EXE
 	subprocess = Process::Create(CHILD_PROCESS_EXE, {pid});
 #else

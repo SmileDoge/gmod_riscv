@@ -10,7 +10,7 @@ extern "C"
 }
 
 static int simple_device_metatable = 0;
-IEmulator* g_Emulator = nullptr;
+static IEmulator* g_Emulator = nullptr;
 
 bool SimpleDevice::OnCreate(nlohmann::json& json)
 {
