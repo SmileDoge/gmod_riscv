@@ -24,6 +24,13 @@ extern "C"
 #include <devices/ns16550a.h>
 }
 
+#ifndef _WIN32
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+#endif
+
 SubprocessEmulator* g_Emulator = nullptr;
 ILogger* g_Logger = nullptr;
 
@@ -70,7 +77,11 @@ bool SubprocessEmulator::Start()
 
 	if (!InitStatus())
 	{
+#ifdef _WIN32
 		RV_ERROR("InitStatus error - %d\n", GetLastError());
+#else
+		RV_ERROR("InitStatus error - %d (%s)\n", errno, strerror(errno));
+#endif
 		return false;
 	}
 
