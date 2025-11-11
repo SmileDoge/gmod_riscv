@@ -1,6 +1,6 @@
 newoption {
-    trigger = "debug-disable-hardlink",
-    description = "Disable hardlink in debug"
+    trigger = "debug-enable-hardlink",
+    description = "enable hardlink in debug"
 }
 
 workspace "gmod_riscv"
@@ -17,8 +17,8 @@ workspace "gmod_riscv"
         "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS",
     }
 
-    if _OPTIONS["debug-disable-hardlink"] then
-        defines { "DEBUG_DISABLE_HARDLINK" }
+    if _OPTIONS["debug-enable-hardlink"] then
+        defines { "DEBUG_ENABLE_HARDLINK" }
     end
 
     startproject "gmod_riscv_test"

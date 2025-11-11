@@ -4,12 +4,14 @@
 
 #include "GmodDeviceLua.h"
 
-#ifdef _DEBUG // for tests
-#ifdef _WIN32
-#define CHILD_PROCESS_EXE "M:\\Projects\\C++\\gmod_riscv\\out\\x86_64\\Debug\\rvvm_subprocess.exe"
-#else
-#define CHILD_PROCESS_EXE "/home/smile/rvvm_gmod/gmod_riscv/out/x86_64/Debug/rvvm_subprocess"
-#endif
+#ifdef DEBUG_ENABLE_HARDLINK
+	#ifdef _DEBUG // for tests
+		#ifdef _WIN32
+		#define CHILD_PROCESS_EXE "M:\\Projects\\C++\\gmod_riscv\\out\\x86_64\\Debug\\rvvm_subprocess.exe"
+		#else
+		#define CHILD_PROCESS_EXE "/home/smile/rvvm_gmod/gmod_riscv/out/x86_64/Debug/rvvm_subprocess"
+		#endif
+	#endif
 #endif
 
 #ifndef _WIN32
@@ -19,9 +21,6 @@
 #include <stdarg.h>
 #endif
 
-#ifdef DEBUG_DISABLE_HARDLINK
-#undef CHILD_PROCESS_EXE
-#endif
 
 ILogger* g_Logger = nullptr;
 
@@ -621,7 +620,7 @@ bool GmodEmulator::InitProcess(const char* subprocess_path)
 #else
 		subprocess_path = "./rvvm_subprocess";
 #endif
-
+	RV_INFO("Sub path: %s", subprocess_path);
 	subprocess = Process::Create(subprocess_path, { pid });
 #endif
 
