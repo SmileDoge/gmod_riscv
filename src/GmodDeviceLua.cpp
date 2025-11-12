@@ -231,7 +231,7 @@ LUA_METHOD_DEFINE_DEVICE(meta__tostring)
 
 	if (device)
 		if (device->machine)
-			snprintf(buffer, 512, "%s: %p:%p (ID: %d) attached to machine (ID: %d) | '%s'", name.c_str(), device->address, (uint64_t)device->device->GetSize(), device->id, device->machine->GetID(), device->device->GetName());
+			snprintf(buffer, 512, "%s: %016X:%016X (ID: %d) attached to machine (ID: %d) | '%s'", name.c_str(), device->address, (uint64_t)device->device->GetSize(), device->id, device->machine->GetID(), device->device->GetName());
 		else
 			snprintf(buffer, 512, "%s: (ID: %d) | '%s'", name.c_str(), device->id, device->device->GetName());
 	else
