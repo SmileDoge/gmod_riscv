@@ -240,10 +240,6 @@ void SubprocessEmulator::CreateMachine(uint32_t id, uint32_t hart_count, uint64_
 		RV_ERROR("Machine with id %d already exists!", id);
 		return;
 	}
-	else
-	{
-		RV_INFO("Not found! %d", id);
-	}
 
 	SubprocessMachine* machine = new SubprocessMachine();
 
