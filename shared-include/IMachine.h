@@ -9,7 +9,7 @@
 
 #include "FDTNode.h"
 
-#define MACHINE_PATH EMULATOR_SHARED_PATH"/Machine"
+#define MACHINE_PATH EMULATOR_SHARED_PATH"Machine"
 
 typedef struct
 {
