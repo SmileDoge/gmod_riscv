@@ -37,6 +37,7 @@ void SimpleDevice::OnAttach(IMachine* machine, uint64_t addr)
 	if (GetRealm() == DeviceRealm::GMOD)
 		return;
 
+#ifndef RVVM_GMOD_SIDE
 	memset(&base, 0, sizeof(base));
 
 	base.data = this;
@@ -62,6 +63,7 @@ void SimpleDevice::OnAttach(IMachine* machine, uint64_t addr)
 	last_time = std::chrono::high_resolution_clock::now();
 
 	SetRawDev((void*)dev);
+#endif
 }
 
 CREATE_FACTORY(SimpleDevice)

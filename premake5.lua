@@ -40,7 +40,7 @@ workspace "gmod_riscv"
     project "gmod_riscv"
         kind "SharedLib"
 
-        defines { "RVVMLIB_SHARED", "GMOD_RISCV_EXPORTS" }
+        defines { "RVVMLIB_SHARED", "GMOD_RISCV_EXPORTS", "RVVM_GMOD_SIDE" }
 
         includedirs {
             "shared-include",
@@ -70,10 +70,6 @@ workspace "gmod_riscv"
             "src-simple-device/**.hpp", 
             "src-simple-device/**.cpp",
             "src-simple-device/**.c",
-        }
-
-        links {
-            "rvvm",
         }
 
         dependson {
@@ -127,10 +123,6 @@ workspace "gmod_riscv"
             "src-simple-device/**.hpp", 
             "src-simple-device/**.cpp",
             "src-simple-device/**.c",
-        }
-
-        links {
-            "rvvm",
         }
 
         dependson {
