@@ -220,11 +220,9 @@ bool SubprocessMachine::Initialize(uint32_t id, uint32_t hart_count, uint64_t ra
 
 	pci_bus_init_auto(rv_machine);
 
-	nvme_init_auto(rv_machine, "D:\\gmod_server_turbostroi_64\\rootfs.ext2", true);
-
 	tap_dev_t* tap = tap_open();
 
-	tap_portfwd(tap, "tcp/192.168.0.7:22");
+	tap_portfwd(tap, "tcp/2222=22");
 
 	rtl8169_init(rvvm_get_pci_bus(rv_machine), tap);
 		

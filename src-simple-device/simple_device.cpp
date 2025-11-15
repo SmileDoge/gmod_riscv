@@ -34,9 +34,6 @@ void SimpleDevice::OnAttach(IMachine* machine, uint64_t addr)
 		return;
 	}
 
-	if (GetRealm() == DeviceRealm::GMOD)
-		return;
-
 #ifndef RVVM_GMOD_SIDE
 	memset(&base, 0, sizeof(base));
 

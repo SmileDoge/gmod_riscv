@@ -2,6 +2,8 @@
 #include "SubprocessEmulator.h"
 #include "simple_device.h"
 
+#include "default_devices.h"
+
 #ifdef _WIN32
 #include "Windows.h"
 #endif
@@ -10,6 +12,7 @@ int main(int argc, char** argv)
 {
 	SubprocessEmulator emu(argc, argv);
 
+	RegisterDefaultDevices(&emu);
 	emu.RegisterDevice("simple_device", CreateSimpleDevice);
 
 	if (emu.Start())

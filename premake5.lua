@@ -46,6 +46,7 @@ workspace "gmod_riscv"
             "shared-include",
             "src",
             "src-simple-device",
+            "src-def-devices",
 
             "external/rvvm/include",
             "external/gmod-module-base-development/include",
@@ -99,6 +100,7 @@ workspace "gmod_riscv"
             "shared-include",
             "src",
             "src-simple-device",
+            "src-def-devices",
 
             "external/rvvm/include",
             "external/gmod-module-base-development/include",
@@ -152,6 +154,7 @@ workspace "gmod_riscv"
             "shared-include",
             "src-subprocess",
             "src-simple-device",
+            "src-def-devices",
 
             "external/rvvm/include",
             "external/gmod-module-base-development/include",

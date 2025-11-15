@@ -26,6 +26,8 @@ extern "C"
 #include "GmodMachineLua.h"
 #include "GmodDeviceLua.h"
 
+#include "default_devices.h"
+
 #include "simple_device.h"
 
 #ifdef GMOD_RISCV_TEST
@@ -137,6 +139,8 @@ GMOD_MODULE_OPEN()
 
     if (!g_Emulator->Start(LUA))
 		LUA->ThrowError("Failed to start emulator!");
+
+    RegisterDefaultDevices(g_Emulator);
 
     g_Emulator->RegisterDevice("simple_device", CreateSimpleDevice, RegisterSimpleDevice, nullptr);
 
