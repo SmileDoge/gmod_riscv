@@ -48,7 +48,7 @@ namespace MachineToSubprocess
 	struct AttachDevice
 	{
 		uint32_t id;
-		uint64_t addr;
+		alignas(8) uint64_t addr;
 	};
 }
 
