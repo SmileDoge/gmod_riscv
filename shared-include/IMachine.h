@@ -60,7 +60,7 @@ namespace MachineFromSubprocess
 	};
 }
 
-typedef struct
+typedef struct alignas(8)
 {
 	MachineToSubprocess::Type typeToSubprocess;
 	MachineFromSubprocess::Type typeFromSubprocess;

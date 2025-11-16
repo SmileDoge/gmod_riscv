@@ -63,7 +63,7 @@ namespace EmulatorFromSubprocess
     };
 }
 
-typedef struct
+typedef struct alignas(8)
 {
     EmulatorToSubprocess::Type typeToSubprocess;
     EmulatorFromSubprocess::Type typeFromSubprocess;
