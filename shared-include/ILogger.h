@@ -2,7 +2,7 @@
 
 #include <string>
 
-enum class ILogType
+enum class ILogType : unsigned char
 {
 	LOG_INFO,
 	LOG_WARN,

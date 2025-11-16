@@ -32,8 +32,8 @@ namespace EmulatorToSubprocess
     struct CreateMachine
     {
         uint32_t id;
-        uint64_t ramCount;
         uint32_t hartCount;
+        alignas(8) uint64_t ramCount;
     };
 
     struct DestroyMachine
