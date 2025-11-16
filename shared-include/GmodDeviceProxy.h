@@ -12,5 +12,5 @@ typedef struct
 	IMachine* machine;
 	IDevice* device;
 
-	uint64_t address;
+	alignas(8) uint64_t address;
 } GmodDeviceProxy;
