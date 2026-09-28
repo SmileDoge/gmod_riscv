@@ -214,17 +214,20 @@ bool SubprocessMachine::Initialize(uint32_t id, uint32_t hart_count, uint64_t ra
 	status->running = false;
 
 	riscv_clint_init_auto(rv_machine);
-	riscv_plic_init_auto(rv_machine);
+	//riscv_plic_init_auto(rv_machine);
+	riscv_imsic_init_auto(rv_machine);
+	riscv_aplic_init_auto(rv_machine);
 
 	rtc_goldfish_init_auto(rv_machine);
 
-	pci_bus_init_auto(rv_machine);
+	//pci_bus_init_auto(rv_machine);
 
-	tap_dev_t* tap = tap_open();
+	//tap_dev_t* tap = tap_open();
 
-	tap_portfwd(tap, "tcp/2222=22");
+	//tap_portfwd(tap, "tcp/2222=22");
+	//tap_portfwd(tap, "tcp/30000=25565");
 
-	rtl8169_init(rvvm_get_pci_bus(rv_machine), tap);
+	//rtl8169_init(rvvm_get_pci_bus(rv_machine), tap);
 		
 	return true;
 }
